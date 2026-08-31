@@ -1,0 +1,9 @@
+{
+  "processsearch.toast.building.title": "Process Search",
+  "processsearch.toast.building.desc": "Indexing recipes\u2026",
+  "processsearch.toast.ready.title": "Process Search",
+  "processsearch.toast.ready.desc": "%s items indexed, %s facets",
+  "processsearch.command.stats.header": "Process Search index",
+  "processsearch.command.stats.notbuilt": "Index not built yet. Open JEI, or run /processsearch rebuild.",
+  "processsearch.command.rebuild": "Process Search index cleared; it will rebuild on the next JEI open or search."
+}

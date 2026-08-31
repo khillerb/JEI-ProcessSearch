@@ -1,0 +1,55 @@
+modLoader = "javafml"
+loaderVersion = "${loader_version_range}"
+license = "${mod_license}"
+
+[[mods]]
+modId = "${mod_id}"
+version = "${mod_version}"
+displayName = "${mod_name}"
+description = '''${mod_description}'''
+authors = "${mod_authors}"
+# This mod is client-only: it indexes recipes JEI already knows about, adds four filter prefixes
+# and draws a process tree. Servers neither need it nor care whether the client has it.
+displayTest = "IGNORE_ALL_VERSIONS"
+
+[[mixins]]
+config = "${mod_id}.mixins.json"
+
+[[dependencies.${mod_id}]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1.0,)"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.${mod_id}]]
+modId = "minecraft"
+type = "required"
+versionRange = "${minecraft_version_range}"
+ordering = "NONE"
+side = "CLIENT"
+
+# Hard dependency: without JEI there is no filter box to add prefixes to.
+[[dependencies.${mod_id}]]
+modId = "jei"
+type = "required"
+versionRange = "[19.21,20)"
+ordering = "AFTER"
+side = "CLIENT"
+
+# Optional. Create supplies the heat.*, fluid.*, chance.* and speed.* facets via its shared
+# ProcessingRecipe base; everything else in this mod works without it.
+[[dependencies.${mod_id}]]
+modId = "create"
+type = "optional"
+versionRange = "[6.0,7.0)"
+ordering = "AFTER"
+side = "CLIENT"
+
+# Optional. Modern Industrialization supplies eu.* voltage tiers from its single MachineRecipe class.
+[[dependencies.${mod_id}]]
+modId = "modern_industrialization"
+type = "optional"
+versionRange = "[2.0,)"
+ordering = "AFTER"
+side = "CLIENT"

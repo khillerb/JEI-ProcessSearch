@@ -1,0 +1,110 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.gradle.userdev' version '7.1.38'
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+// Mojang ships Java 21 to end users in 1.21.1, so mods target Java 21.
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+repositories {
+    maven {
+        // Create, Ponder, Catnip, Flywheel
+        url = 'https://maven.createmod.net'
+    }
+    maven {
+        // Registrate
+        url = 'https://maven.ithundxr.dev/snapshots'
+        content { includeGroup 'com.tterrag.registrate' }
+    }
+    maven {
+        // JEI (only used for dev-run convenience; compilation uses the local jar -- see below)
+        url = 'https://maven.blamejared.com'
+    }
+}
+
+runs {
+    configureEach {
+        systemProperty 'forge.logging.markers', 'REGISTRIES'
+        systemProperty 'forge.logging.console.level', 'debug'
+        modSource project.sourceSets.main
+    }
+    client {
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+    }
+}
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+dependencies {
+    implementation "net.neoforged:neoforge:${neo_version}"
+
+    // JEI, full production jar straight out of the pack's mods folder.
+    //
+    // This has to be the full jar, not the -api artifacts: everything this mod hooks
+    // (ElementPrefixParser, PrefixInfo, IngredientFilter, IngredientFilterApi,
+    // LimitedStringStorage) lives in mezz.jei.gui.* and mezz.jei.core.*, which are
+    // implementation packages and are not published to Maven at all. Compiling against the
+    // exact jar the pack runs is also the only way to notice if a JEI update moves one of
+    // those mixin targets -- against the API jars it would compile clean and fail at runtime.
+    compileOnly files("libs/jei-${minecraft_version}-neoforge-${jei_version}.jar")
+
+    // Create is compileOnly and every call site is behind ModList.get().isLoaded("create").
+    // The `slim` classifier is the jar without shaded dependencies, which is what you compile
+    // against. Registrate and ponder are not used directly here, but Create's own class
+    // signatures reference them, so javac needs them resolvable.
+    compileOnly("com.simibubi.create:create-1.21.1:${create_version}:slim") { transitive = false }
+    compileOnly("com.tterrag.registrate:Registrate:${registrate_version}") { transitive = false }
+    compileOnly("net.createmod.ponder:ponder-neoforge:${ponder_version}") { transitive = false }
+    compileOnly("dev.engine-room.flywheel:flywheel-neoforge-1.21.1:${flywheel_version}") { transitive = false }
+
+    // Modern Industrialization, same deal as Create: compileOnly, every call site behind
+    // ModList.get().isLoaded("modern_industrialization"). One MachineRecipe class covers every MI
+    // machine, and the adapter only touches getStack()/getInputItems()/getInputFluids(), so none of
+    // MI's shaded fabrictransfer types leak onto our classpath.
+    compileOnly files("libs/Modern-Industrialization-${mi_version}.jar")
+
+    // Create: Dragons Plus is deliberately NOT a dependency. Its ColoringRecipe is matched by
+    // fully-qualified class name at runtime, so the dye facet costs nothing when CDP is absent
+    // and needs no rebuild when CDP updates.
+
+    // For dev runs only.
+    localRuntime files("libs/jei-${minecraft_version}-neoforge-${jei_version}.jar")
+    localRuntime("com.simibubi.create:create-1.21.1:${create_version}") { transitive = false }
+}
+
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description,
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

@@ -1,0 +1,71 @@
+package dev.processsearch.index.tree;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import mezz.jei.api.recipe.category.IRecipeCategory;
+
+/**
+ * One machine in the graph: every recipe of a single category that touches the parent item.
+ *
+ * <p>Aggregating by category rather than drawing a node per recipe is what keeps the overview
+ * readable: the Crushing Wheels node stands for all 47 crushing recipes that take cobblestone, and
+ * clicking it opens the list of the 47. Category is also the granularity the {@code >} and
+ * {@code *} vocabulary uses, so what you can filter is what you can see.
+ */
+public final class ProcessNode {
+    public final IRecipeCategory<?> category;
+    /** The workstation that runs it, so the node reads "Crushing Wheels", not "create:crushing". */
+    public final Object icon;
+    /** The JEI recipe objects, usually {@code RecipeHolder}s. */
+    public final List<Object> recipes;
+    public final ItemNode parent;
+    public final int depth;
+
+    private final List<ItemNode> items = new ArrayList<>(4);
+
+    /** Items the width cap dropped. */
+    int hiddenItems;
+
+    ProcessNode(IRecipeCategory<?> category, Object icon, List<Object> recipes, ItemNode parent) {
+        this.category = category;
+        this.icon = icon;
+        this.recipes = recipes;
+        this.parent = parent;
+        this.depth = parent.depth + 1;
+    }
+
+    /** The far side of this step: outputs when following consumers, inputs when following producers. */
+    public List<ItemNode> items() {
+        return items;
+    }
+
+    void add(ItemNode item) {
+        items.add(item);
+    }
+
+    public int hiddenItems() {
+        return hiddenItems;
+    }
+
+    public int recipeCount() {
+        return recipes.size();
+    }
+
+    public String categoryId() {
+        return category.getRecipeType().getUid().toString();
+    }
+
+    public String title() {
+        try {
+            return category.getTitle().getString();
+        } catch (RuntimeException | LinkageError e) {
+            return categoryId();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "ProcessNode[" + categoryId() + " x" + recipes.size() + "]";
+    }
+}

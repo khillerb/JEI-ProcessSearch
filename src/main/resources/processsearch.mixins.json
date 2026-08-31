@@ -1,0 +1,17 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.processsearch.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [],
+  "client": [
+    "ElementPrefixParserMixin",
+    "FocusedRecipesMixin",
+    "IngredientFilterApiAccessor",
+    "IngredientFilterMixin",
+    "RecipesGuiMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}
