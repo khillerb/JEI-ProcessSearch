@@ -1,12 +1,10 @@
 package dev.processsearch.screen;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import dev.processsearch.index.Scan;
-import dev.processsearch.index.tree.Direction;
 import dev.processsearch.index.tree.Ingredients;
 import dev.processsearch.index.tree.ItemNode;
 import dev.processsearch.index.tree.ProcessGraph;
